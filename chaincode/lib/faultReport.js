@@ -2,7 +2,7 @@
 
 const { Contract } = require("fabric-contract-api");
 
-class faultReport extends Contract {
+class FaultReport extends Contract {
   /**
    * Initialize a ledger, in this case we will have an example report from a practical Room in the USB, report of a broken PC folding mechanism
    */
@@ -39,16 +39,44 @@ class faultReport extends Contract {
 
   /**
    * @param {*} ctx
-   * @param {*} ID The ID of the report to read
+   * @param {*} id The ID of the report to read
    */
-  async ReadAsset(ctx, ID) {
-    const report = await ctx.stub.getState(ID); // return a fault report by a given ID
+  async GetReport(ctx, id) {
+    const report = await ctx.stub.getState(id); // return a fault report by a given id
 
     if (!report || report.length === 0) {
-      throw new Error(`The report ${ID} doesn't exist`);
+      throw new Error(`The report ${id} doesn't exist`);
     }
 
     return report.toString();
+  }
+
+  /**
+   * Returns all reports on the ledger,   
+   * 
+   * @param {*} ctx 
+   */
+  async GetAllReports(ctx) {
+    const allResults = [];
+
+    const iterator = await ctx.stub.getStateByRange("", "");
+    let result = await iterator.next();
+
+    while (!result.done) {
+      const strValue = Buffer.from(result.value.value.toString()).toString("utf8");
+
+      let record;
+
+      try {
+        record = JSON.parse(strValue);
+      } catch (err) {
+        console.log(err);
+        record = strValue;
+      }
+
+      allResults.push({ Key: result.value.key, Record: record });
+    }
+
   }
 
   /**
@@ -98,3 +126,5 @@ class faultReport extends Contract {
     return report && report.length > 0;
   }
 }
+
+module.exports = FaultReport

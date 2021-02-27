@@ -1,6 +1,6 @@
 "use strict";
 
-const assetTransfer = require("./lib/assetTransfer");
+const faultReport = require("./lib/faultReport");
 
-module.exports.AssetTransfer = assetTransfer;
-module.exports.contracts = [assetTransfer];
+module.exports.AssetTransfer = faultReport;
+module.exports.contracts = [faultReport];
