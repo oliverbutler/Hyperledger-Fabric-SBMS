@@ -12,6 +12,7 @@ const {
   buildCCPOrg1,
   buildWallet,
 } = require("../fabric-samples/test-application/javascript/AppUtil.js");
+const { report } = require("process");
 
 const channelName = "mychannel";
 const chaincodeName = "basic";
@@ -19,9 +20,6 @@ const mspOrg1 = "Org1MSP";
 const walletPath = path.join(__dirname, "wallet");
 const org1UserId = "appUser";
 
-function prettyJSONString(inputString) {
-  return JSON.stringify(JSON.parse(inputString), null, 2);
-}
 
 async function main() {
   try {
@@ -73,12 +71,12 @@ async function main() {
       // Get the contract from the network
       const contract = network.getContract(chaincodeName);
 
-      console.log(`Initializing Ledger...`);
-      await contract.submitTransaction("InitLedger");
+      console.log("Printing report1");
+      console.log(await getReport(contract, "report1"));
 
-      console.log(`Print first one...`);
-      let report = await contract.evaluateTransaction("ReadAsset", "report1");
-      console.log(`Result ${prettyJSONString(report.toString())}`);
+      console.log("Printing all reports");
+      console.log(await getAllReports(contract));
+
     } finally {
       gateway.disconnect();
     }
@@ -86,5 +84,59 @@ async function main() {
     console.error(`Error: ${error}`);
   }
 }
+
+/**
+ * Return all the current reports in the ledger
+ * 
+ * @param {*} contract 
+ */
+const getAllReports = async (contract) => {
+  let reports = await contract.evaluateTransaction("GetAllReports");
+  // Reports is returned as a Buffer, so we convert this to a json object
+  let json = JSON.parse(reports.toString());
+
+  // Change format from {Key: {}, Report: {}} to only the report object (this already includes the key)
+  return json
+}
+
+/**
+ * Initialize several test reports (strictly for development)
+ */
+const initLedger = async (contract) => {
+  await contract.submitTransaction("InitLedger");
+}
+
+/**
+ * Search for a single report by its ID
+ * 
+ * @param {*} contract 
+ * @param {*} reportId 
+ */
+const getReport = async (contract, reportId) => {
+  let report = await contract.evaluateTransaction("GetReport", reportId);
+  return JSON.parse(report.toString())
+}
+
+/**
+ * Create a new report 
+ * 
+ * @param {*} contract 
+ * @param {*} reportId 
+ * @param {*} ownerId 
+ * @param {*} building 
+ * @param {*} room 
+ * @param {*} asset 
+ * @param {*} type 
+ * @param {*} description 
+ */
+const createReport = async (contract, reportId, ownerId, building, room, asset, type, description) => {
+  await contract.submitTransaction("CreateReport", reportId, ownerId, building, room, asset, type, description, "submitted");
+}
+
+
+
+
+
+
 
 main();
