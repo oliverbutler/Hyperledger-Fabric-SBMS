@@ -1,16 +1,22 @@
 {
   "name": "fault-report",
   "version": "1.0.0",
-  "description": "Fault Reporting application written in JS",
-  "engines": {
-    "node": ">=12",
-    "npm": ">=5"
+  "description": "Fault Reporting application written in TS",
+  "main": "dist/app.js",
+  "scripts": {
+    "start": "tsc && nodemon dist/app.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "engineStrict": true,
-  "author": "Hyperledger",
-  "license": "Apache-2.0",
+  "devDependencies": {
+    "@types/express": "^4.16.1",
+    "tslint": "^5.12.1",
+    "typescript": "^3.3.3"
+  },
   "dependencies": {
+    "express": "^4.17.1",
     "fabric-ca-client": "^2.2.4",
-    "fabric-network": "^2.2.4"
+    "fabric-network": "^2.2.4",
+    "lodash": "^4.17.21"
   }
 }

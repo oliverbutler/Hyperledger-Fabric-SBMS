@@ -7,11 +7,11 @@ const {
   buildCAClient,
   registerAndEnrollUser,
   enrollAdmin,
-} = require("../fabric-samples/test-application/javascript/CAUtil.js");
+} = require("../../fabric-samples/test-application/javascript/CAUtil.js");
 const {
   buildCCPOrg1,
   buildWallet,
-} = require("../fabric-samples/test-application/javascript/AppUtil.js");
+} = require("../../fabric-samples/test-application/javascript/AppUtil.js");
 const { report } = require("process");
 
 const channelName = "mychannel";
@@ -20,8 +20,18 @@ const mspOrg1 = "Org1MSP";
 const walletPath = path.join(__dirname, "wallet");
 const org1UserId = "appUser";
 
+const _ = require('lodash')
 
-async function main() {
+
+// Create a new gateway instance for interacting with the fabric network.
+// In a real application this would be done as the backend server session is setup for
+// a user that has been verified.
+const gateway = new Gateway();
+
+// Contract object we call to perform operations/transactions on the chaincode
+let contract;
+
+export const connectGateway = async () => {
   try {
     // Create an in-memory connection profile
     const ccp = buildCCPOrg1();
@@ -50,93 +60,81 @@ async function main() {
       "org1.department1"
     );
 
-    // Create a new gateway instance for interacting with the fabric network.
-    // In a real application this would be done as the backend server session is setup for
-    // a user that has been verified.
-    const gateway = new Gateway();
+    await gateway.connect(ccp, {
+      wallet,
+      identity: org1UserId,
+      discovery: {
+        enabled: true,
+        asLocalHost: true,
+      },
+    });
 
-    try {
-      await gateway.connect(ccp, {
-        wallet,
-        identity: org1UserId,
-        discovery: {
-          enabled: true,
-          asLocalHost: true,
-        },
-      });
+    // Build a network instance on the channel we deployed the chaincode on
+    const network = await gateway.getNetwork(channelName);
 
-      // Build a network instance on the channel we deployed the chaincode on
-      const network = await gateway.getNetwork(channelName);
+    // Get the contract from the network
+    contract = network.getContract(chaincodeName);
 
-      // Get the contract from the network
-      const contract = network.getContract(chaincodeName);
+    return contract;
 
-      console.log("Printing report1");
-      console.log(await getReport(contract, "report1"));
-
-      console.log("Printing all reports");
-      console.log(await getAllReports(contract));
-
-    } finally {
-      gateway.disconnect();
-    }
   } catch (error) {
     console.error(`Error: ${error}`);
   }
 }
 
+export const disconnect = () => {
+  gateway.disconnect();
+}
+
+/**
+ * Interface for a report, decreases the likelihood of typing errors and improves the intellisense capabilities
+ */
+interface Report {
+  reportId: string;
+  ownerId: string;
+  building: string;
+  room: string;
+  asset: string;
+  type: string;
+  description: string;
+  status?: string;
+}
+
 /**
  * Return all the current reports in the ledger
- * 
- * @param {*} contract 
  */
-const getAllReports = async (contract) => {
+export const getAllReports = async (): Promise<Report[]> => {
   let reports = await contract.evaluateTransaction("GetAllReports");
   // Reports is returned as a Buffer, so we convert this to a json object
   let json = JSON.parse(reports.toString());
 
   // Change format from {Key: {}, Report: {}} to only the report object (this already includes the key)
-  return json
+  return _.map(json, "Report");
 }
 
 /**
  * Initialize several test reports (strictly for development)
  */
-const initLedger = async (contract) => {
+export const initLedger = async () => {
   await contract.submitTransaction("InitLedger");
 }
 
 /**
  * Search for a single report by its ID
  * 
- * @param {*} contract 
  * @param {*} reportId 
  */
-const getReport = async (contract, reportId) => {
+export const getReport = async (reportId: string): Promise<Report> => {
   let report = await contract.evaluateTransaction("GetReport", reportId);
   return JSON.parse(report.toString())
 }
 
 /**
- * Create a new report 
+ * Create a new report and add it to the ledger via the smart contract
  * 
- * @param {*} contract 
- * @param {*} reportId 
- * @param {*} ownerId 
- * @param {*} building 
- * @param {*} room 
- * @param {*} asset 
- * @param {*} type 
- * @param {*} description 
+ * @param report 
  */
-const createReport = async (contract, reportId, ownerId, building, room, asset, type, description) => {
-  await contract.submitTransaction("CreateReport", reportId, ownerId, building, room, asset, type, description, "submitted");
+export const createReport = async (report: Report) => {
+  await contract.submitTransaction("CreateReport", report.reportId, report.ownerId, report.building, report.room, report.asset, report.type, report.description, "submitted");
 }
 
-
-
-
-
-
-
-main();
