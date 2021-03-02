@@ -1,73 +1,42 @@
-"use strict";
+import { Gateway, GatewayOptions } from 'fabric-network';
+import * as path from 'path';
+import { buildCCPOrg1, buildWallet } from './utils/AppUtil';
+import { buildCAClient, enrollAdmin, registerAndEnrollUser } from './utils/CAUtil';
 
-const { Gateway, Wallets } = require("fabric-network");
-const FabricCAServices = require("fabric-ca-client");
-const path = require("path");
-const {
-  buildCAClient,
-  registerAndEnrollUser,
-  enrollAdmin,
-} = require("../../fabric-samples/test-application/javascript/CAUtil.js");
-const {
-  buildCCPOrg1,
-  buildWallet,
-} = require("../../fabric-samples/test-application/javascript/AppUtil.js");
-const { report } = require("process");
-
-const channelName = "mychannel";
-const chaincodeName = "basic";
-const mspOrg1 = "Org1MSP";
-const walletPath = path.join(__dirname, "wallet");
-const org1UserId = "appUser";
+const channelName = 'mychannel';
+const chaincodeName = 'basic';
+const mspOrg1 = 'Org1MSP';
+const walletPath = path.join(__dirname, 'wallet');
+const org1UserId = 'appUser1';
 
 const _ = require('lodash')
 
-
-// Create a new gateway instance for interacting with the fabric network.
-// In a real application this would be done as the backend server session is setup for
-// a user that has been verified.
-const gateway = new Gateway();
+let gateway;
 
 // Contract object we call to perform operations/transactions on the chaincode
 let contract;
 
 export const connectGateway = async () => {
   try {
-    // Create an in-memory connection profile
     const ccp = buildCCPOrg1();
 
-    // build an instance of the fabric ca services client based on
-    // the information in the network configuration
-    const caClient = buildCAClient(
-      FabricCAServices,
-      ccp,
-      "ca.org1.example.com"
-    );
+    const caClient = buildCAClient(ccp, 'ca.org1.example.com');
 
-    // setup wallet to hold credentials of the application user
-    const wallet = await buildWallet(Wallets, walletPath);
+    const wallet = await buildWallet(walletPath);
 
-    // in a real application this would be done on an administrative flow, and only once
     await enrollAdmin(caClient, wallet, mspOrg1);
 
-    // in a real application this would be done only when a new user was required to be added
-    // and would be part of an administrative flow
-    await registerAndEnrollUser(
-      caClient,
-      wallet,
-      mspOrg1,
-      org1UserId,
-      "org1.department1"
-    );
+    await registerAndEnrollUser(caClient, wallet, mspOrg1, org1UserId, 'org1.department1');
 
-    await gateway.connect(ccp, {
+    gateway = new Gateway();
+
+    const gatewayOpts: GatewayOptions = {
       wallet,
       identity: org1UserId,
-      discovery: {
-        enabled: true,
-        asLocalHost: true,
-      },
-    });
+      discovery: { enabled: true, asLocalhost: true }, // using asLocalhost as this gateway is using a fabric network deployed locally
+    };
+
+    await gateway.connect(ccp, gatewayOpts);
 
     // Build a network instance on the channel we deployed the chaincode on
     const network = await gateway.getNetwork(channelName);

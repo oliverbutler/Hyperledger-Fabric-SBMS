@@ -13,8 +13,9 @@ app.get("/", (req, res) => {
   res.send("Hello world!");
 });
 
-app.get('/report1', async (req, res) => {
-  let report = await fabric.getReport('report1');
+app.get('/report/:id', async (req, res) => {
+
+  let report = await fabric.getReport('report' + req.params.id);
   res.send(report)
 })
 
