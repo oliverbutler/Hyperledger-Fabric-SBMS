@@ -52,7 +52,7 @@ export const connectGateway = async () => {
 }
 
 export const disconnect = () => {
-  gateway.disconnect();
+  gateway.disconnect()
 }
 
 /**
@@ -78,7 +78,7 @@ export const getAllReports = async (): Promise<Report[]> => {
   let json = JSON.parse(reports.toString());
 
   // Change format from {Key: {}, Report: {}} to only the report object (this already includes the key)
-  return _.map(json, "Report");
+  return _.map(json, "Record");
 }
 
 /**

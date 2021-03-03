@@ -4,7 +4,7 @@
   "description": "Fault Reporting application written in TS",
   "main": "dist/app.js",
   "scripts": {
-    "start": "tsc && nodemon dist/app.js",
+    "start": "tsc && nodemon --watch src dist/app.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "engineStrict": true,
@@ -14,6 +14,7 @@
     "typescript": "^3.3.3"
   },
   "dependencies": {
+    "cors": "^2.8.5",
     "express": "^4.17.1",
     "fabric-ca-client": "^2.2.4",
     "fabric-network": "^2.2.4",

@@ -1,22 +1,29 @@
 import express from 'express'
+import cors from "cors"
 
 // Import Fabric helpers
 import * as fabric from "./fabric.js"
 
 const app = express();
-const port = 3000;
+const port = 5000;
 
-fabric.connectGateway().then(() => console.log("Connected to Ledger"))
+// CORS
+app.use(cors())
 
-// define a route handler for the default home page
-app.get("/", (req, res) => {
-  res.send("Hello world!");
-});
+fabric.connectGateway().then(() => console.log("[Gateway] Connected to Ledger"))
+
+app.get('/', (req, res) => {
+  res.json({ "alive": true })
+})
+
+app.get('/reports', async (req, res) => {
+  let reports = await fabric.getAllReports();
+  res.json(reports)
+})
 
 app.get('/report/:id', async (req, res) => {
-
   let report = await fabric.getReport('report' + req.params.id);
-  res.send(report)
+  res.json(report)
 })
 
 // start the Express server
@@ -26,5 +33,6 @@ app.listen(port, () => {
 
 // Before we close the express server down, disconnect the gateway
 process.on('exit', () => {
-  fabric.disconnect();
+  fabric.disconnect()
+  console.log("[Gateway] Disconnected")
 });
