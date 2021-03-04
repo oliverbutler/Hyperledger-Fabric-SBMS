@@ -4,7 +4,10 @@ import App from './App';
 import reportWebVitals from './reportWebVitals';
 
 // Tailwind CSS Imports
-import './styles/index.css';
+// import './styles/index.css';
+
+// Bootstrap CSS Imports
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 ReactDOM.render(
   <React.StrictMode>
