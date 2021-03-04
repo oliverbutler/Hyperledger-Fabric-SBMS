@@ -4,7 +4,7 @@
   "description": "Fault Reporting application written in TS",
   "main": "dist/app.js",
   "scripts": {
-    "start": "tsc && nodemon --watch src dist/app.js",
+    "start": "tsc && nodemon dist/app.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "engineStrict": true,
