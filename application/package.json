@@ -4,7 +4,8 @@
   "description": "Fault Reporting application written in TS",
   "main": "dist/app.js",
   "scripts": {
-    "start": "tsc && nodemon dist/app.js",
+    "start": "tsc && node dist/app.js",
+    "dev": "nodemon -e ts --exec \"npm run start\"",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "engineStrict": true,
@@ -14,10 +15,13 @@
     "typescript": "^3.3.3"
   },
   "dependencies": {
+    "@types/node": "^14.14.31",
     "cors": "^2.8.5",
     "express": "^4.17.1",
     "fabric-ca-client": "^2.2.4",
     "fabric-network": "^2.2.4",
-    "lodash": "^4.17.21"
+    "lodash": "^4.17.21",
+    "sequelize": "^6.5.0",
+    "sqlite3": "^5.0.2"
   }
 }
