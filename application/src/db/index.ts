@@ -1,8 +1,8 @@
-const { Sequelize } = require('sequelize');
+import { Sequelize } from "sequelize";
 import { createMock } from "./mock/setup"
 
 // Setup an in-memory DB (for now)
-const sequelize = new Sequelize('sqlite::memory:')
+const sequelize: Sequelize = new Sequelize('sqlite::memory:')
 
 // Setup the mock
 createMock(sequelize);
@@ -13,7 +13,7 @@ const models = [
   require("./models/building.model"),
   require("./models/room.model"),
   require("./models/asset.model"),
-  require('./models/assetType.model')
+  require('./models/type.model')
 ]
 
 // Define all the models
@@ -22,18 +22,19 @@ for (var modelDefine of models) {
 }
 
 // Setup relationships
-const { building, room, asset, assetType } = sequelize.models;
+const { building, room, asset, type } = sequelize.models;
 
-// Building 1<->1 Room
+// Building has many Room
 building.hasMany(room);
 room.belongsTo(building);
 
-// Room 1<->X Asset
+// Room has many Asset
 room.hasMany(asset);
 asset.belongsTo(room)
 
-// Asset 1->1 AssetType
-asset.hasOne(assetType);
+// Asset has one Type
+type.hasMany(asset);
+asset.belongsTo(type);
 
 module.exports = sequelize;
 

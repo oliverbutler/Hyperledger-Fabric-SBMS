@@ -42,9 +42,46 @@ app.get('/report/:id', async (req, res) => {
   res.json(report)
 })
 
+/**
+ * Return all buildings
+ */
 app.get('/buildings', async (req, res) => {
-  const users = await sequelize.models.building.findAll({
+  const users = await sequelize.models.building.findAll({});
+  res.status(200).json(users);
+})
+
+/**
+ * Return specific building (including its rooms)
+ */
+app.get('/building/:id', async (req, res) => {
+  const users = await sequelize.models.building.findOne({
+    where: { id: req.params.id },
     include: [{ model: sequelize.models.room, as: 'rooms' }]
+  });
+  res.status(200).json(users);
+})
+
+/**
+ * Return all rooms within a building
+ */
+app.get('/building/:id/rooms', async (req, res) => {
+  const users = await sequelize.models.room.findAll({
+    where: { buildingId: req.params.id },
+  });
+  res.status(200).json(users);
+})
+
+/**
+ * Return a specific room within a building (including its assets)
+ */
+app.get('/building/:bid/rooms/:rid', async (req, res) => {
+  const users = await sequelize.models.room.findAll({
+    where: { buildingId: req.params.bid, id: req.params.rid },
+    include: [{
+      model: sequelize.models.asset, as: 'assets', include: [
+        { model: sequelize.models.type, as: 'type' }
+      ]
+    }]
   });
   res.status(200).json(users);
 })

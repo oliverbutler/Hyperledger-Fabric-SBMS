@@ -6,6 +6,10 @@ module.exports = (sequelize) => {
       allowNull: false,
       type: DataTypes.STRING,
     },
+    description: {
+      allowNull: true,
+      type: DataTypes.STRING
+    }
     // HAS one type e.g. Soap Dispenser, Chair, 
   });
 }
