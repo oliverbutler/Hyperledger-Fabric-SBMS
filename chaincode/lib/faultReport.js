@@ -6,33 +6,14 @@ class FaultReport extends Contract {
   /**
    * Initialize a ledger, in this case we will have an example report from a practical Room in the USB, report of a broken PC folding mechanism
    */
-  async InitLedger(ctx) {
-    const reports = [
-      {
-        ID: "report1",
-        Owner: "b00001",
-        Building: "usb",
-        Room: "3.005",
-        Asset: "12",
-        Type: "damage",
-        Description: "Broken PC folding mechanism",
-        Status: "submitted",
-      },
-      {
-        ID: "report2",
-        Owner: "b00002",
-        Building: "usb",
-        Room: "3.018",
-        Asset: "115",
-        Type: "refill",
-        Description: "Empty hand sanitizer",
-        Status: "fixed",
-      },
-    ];
+  async InitLedger(ctx, reports) {
 
-    for (const report of reports) {
-      report.docType = "report";
-      await ctx.stub.putState(report.ID, Buffer.from(JSON.stringify(report)));
+    // We have to send the parameters as strings
+    let json = JSON.parse(reports);
+
+    for (const report of json) {
+      report.status = "SUBMITTED"
+      await ctx.stub.putState("report_" + report.reportId, Buffer.from(JSON.stringify(report)));
       console.log(`Report ${report.ID} initialized successfully`);
     }
   }
@@ -42,7 +23,7 @@ class FaultReport extends Contract {
    * @param {*} id The ID of the report to read
    */
   async GetReport(ctx, id) {
-    const report = await ctx.stub.getState(id); // return a fault report by a given id
+    const report = await ctx.stub.getState("report_" + id); // return a fault report by a given id
 
     if (!report || report.length === 0) {
       throw new Error(`The report ${id} doesn't exist`);
@@ -77,49 +58,29 @@ class FaultReport extends Contract {
   }
 
   /**
-   * Create a new report, taking the appropriate parameters
-   * @param {*} ctx
-   * @param {*} ID
-   * @param {*} Owner
-   * @param {*} Building
-   * @param {*} Room
-   * @param {*} Asset
-   * @param {*} Type
-   * @param {*} Description
-   * @param {*} Status
+   * Create report from a report object
+   * 
+   * @param {*} ctx 
+   * @param {*} report 
    */
-  async CreateReport(
-    ctx,
-    ID,
-    Owner,
-    Building,
-    Room,
-    Asset,
-    Type,
-    Description,
-    Status
-  ) {
-    const report = {
-      ID,
-      Owner,
-      Building,
-      Room,
-      Asset,
-      Type,
-      Description,
-      Status,
-    };
-    ctx.stub.putState(ID, Buffer.from(JSON.stringify(report)));
+  async CreateReport(ctx, report) {
+    report = JSON.parse(report);
+
+    if (this.ReportExists(ctx, report.reportId)) {
+      throw new Error(`The report ${id} already exists`);
+    }
+
+    ctx.stub.putState("report_" + report.reportId, Buffer.from(JSON.stringify(report)));
     return JSON.stringify(report);
   }
 
   /**
    * Helper to find out if a report exists on the ledger
    * @param {} ctx
-   * @param {*} ID
+   * @param {*} reportId
    */
-  async ReportExists(ctx, ID) {
-    const report = await ctx.stub.getState(ID);
+  async ReportExists(ctx, reportId) {
+    const report = await ctx.stub.getState("report_" + reportId);
     return report && report.length > 0;
   }
 }

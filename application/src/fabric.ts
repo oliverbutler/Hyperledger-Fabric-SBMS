@@ -1,4 +1,4 @@
-import { Gateway, GatewayOptions } from 'fabric-network';
+import { Contract, Gateway, GatewayOptions } from 'fabric-network';
 import * as path from 'path';
 import { buildCCPOrg1, buildWallet } from './utils/AppUtil';
 import { buildCAClient, enrollAdmin, registerAndEnrollUser } from './utils/CAUtil';
@@ -11,10 +11,10 @@ const org1UserId = 'appUser1';
 
 const _ = require('lodash')
 
-let gateway;
+let gateway: Gateway;
 
 // Contract object we call to perform operations/transactions on the chaincode
-let contract;
+let contract: Contract;
 
 export const connectGateway = async () => {
   try {
@@ -57,14 +57,17 @@ export const disconnect = () => {
 
 /**
  * Interface for a report, decreases the likelihood of typing errors and improves the intellisense capabilities
+ * 
+ * We use ID's rather than the raw data so we can make changes to names of buildings, rooms, descriptions 
+ * whatnot within our traditional DB, and the changes will be reflected globally without a ledger rewrite
  */
-interface Report {
-  reportId: string;
-  ownerId: string;
-  building: string;
-  room: string;
-  asset: string;
-  type: string;
+export interface Report {
+  reportId: number;
+  reporteeId: number;
+  buildingId: number;
+  roomId: number;
+  assetId: number;
+  damageId: number;
   description: string;
   status?: string;
 }
@@ -79,13 +82,6 @@ export const getAllReports = async (): Promise<Report[]> => {
 
   // Change format from {Key: {}, Report: {}} to only the report object (this already includes the key)
   return _.map(json, "Record");
-}
-
-/**
- * Initialize several test reports (strictly for development)
- */
-export const initLedger = async () => {
-  await contract.submitTransaction("InitLedger");
 }
 
 /**
@@ -104,6 +100,35 @@ export const getReport = async (reportId: string): Promise<Report> => {
  * @param report 
  */
 export const createReport = async (report: Report) => {
-  await contract.submitTransaction("CreateReport", report.reportId, report.ownerId, report.building, report.room, report.asset, report.type, report.description, "submitted");
+  report.status = "SUBMITTED";
+  await contract.submitTransaction("CreateReport", JSON.stringify(report));
+}
+
+/**
+ * Initialize several test reports (strictly for development)
+ */
+export const initLedger = async () => {
+  const reports: Report[] = [
+    {
+      reportId: 1,
+      reporteeId: 1,
+      buildingId: 1, // usb
+      roomId: 2, // unisex toilet
+      assetId: 10, // a unisex toilet
+      damageId: 3, // NOT_WORKING
+      description: "Toilet is not flushing",
+    },
+    {
+      reportId: 2,
+      reporteeId: 1,
+      buildingId: 1, // usb
+      roomId: 1, // lobby
+      assetId: 12, // Window bay seats
+      damageId: 1, // WATER_DAMAGE 
+      description: "Drink Spilled onto Sofa",
+    }
+  ]
+
+  await contract.submitTransaction("InitLedger", JSON.stringify(reports));
 }
 

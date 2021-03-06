@@ -13,7 +13,8 @@ const models = [
   require("./models/building.model"),
   require("./models/room.model"),
   require("./models/asset.model"),
-  require('./models/type.model')
+  require('./models/type.model'),
+  require('./models/damage.model')
 ]
 
 // Define all the models
