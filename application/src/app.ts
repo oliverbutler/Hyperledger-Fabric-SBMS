@@ -75,7 +75,6 @@ app.get('/reports', async (req, res) => {
 
   if (req.query.populate && req.query.populate === "true") {
     const populatedReports = await Promise.all(reports.map(r => populateReport(r)))
-    console.log(populatedReports)
     res.json(populatedReports)
   } else {
     res.json(reports)
