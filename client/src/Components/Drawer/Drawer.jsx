@@ -20,11 +20,7 @@ import ChevronRightIcon from '@material-ui/icons/ChevronRight';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
-
-import ViewListIcon from '@material-ui/icons/ViewList';
-import BusinessIcon from '@material-ui/icons/Business';
-import PeopleIcon from '@material-ui/icons/People';
-
+import { Link } from 'react-router-dom';
 
 const drawerWidth = 240;
 
@@ -85,7 +81,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export const LeftDrawer = ({ children }) => {
+export const LeftDrawer = ({ children, title, sections }) => {
   const classes = useStyles();
   const theme = useTheme();
   const [open, setOpen] = React.useState(true);
@@ -118,7 +114,7 @@ export const LeftDrawer = ({ children }) => {
             <MenuIcon />
           </IconButton>
           <Typography variant="h6" noWrap>
-            All Fault Reports
+            {title}
           </Typography>
         </Toolbar>
       </AppBar>
@@ -136,24 +132,22 @@ export const LeftDrawer = ({ children }) => {
             {theme.direction === 'ltr' ? <ChevronLeftIcon /> : <ChevronRightIcon />}
           </IconButton>
         </div>
-        <Divider />
-        <List>
-          <ListItem button key="Reports">
-            <ListItemIcon><ViewListIcon /></ListItemIcon>
-            <ListItemText primary="Reports" />
-          </ListItem>
-        </List>
-        <Divider />
-        <List>
-          <ListItem button key="Buildings">
-            <ListItemIcon><BusinessIcon /></ListItemIcon>
-            <ListItemText primary="Buildings" />
-          </ListItem>
-          <ListItem button key="Users">
-            <ListItemIcon><PeopleIcon /></ListItemIcon>
-            <ListItemText primary="Users" />
-          </ListItem>
-        </List>
+        {sections.map((section, index) => (
+          <div key={`section-${index}`}>
+            <Divider />
+            <List>
+              {section.map((page) => (
+                <Link to={page.path} key={page.title} style={{ textDecoration: 'none', color: 'black' }} >
+                  <ListItem button key={page.title}>
+                    <ListItemIcon>{page.icon}</ListItemIcon>
+                    <ListItemText primary={page.title} />
+                  </ListItem>
+                </Link>
+              ))}
+            </List>
+          </div>
+        ))}
+
       </Drawer>
       <main
         className={clsx(classes.content, {

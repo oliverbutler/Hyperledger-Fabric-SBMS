@@ -73,11 +73,11 @@ app.get('/init-ledger', async (req, res) => {
 app.get('/reports', async (req, res) => {
   let reports = await fabric.getAllReports();
 
-  if (req.query.populate && req.query.populate === "true") {
+  if (req.query.populate && req.query.populate === "false") {
+    res.json(reports)
+  } else {
     const populatedReports = await Promise.all(reports.map(r => populateReport(r)))
     res.json(populatedReports)
-  } else {
-    res.json(reports)
   }
 })
 
@@ -87,10 +87,10 @@ app.get('/reports', async (req, res) => {
 app.get('/report/:id', async (req, res) => {
   let report = await fabric.getReport(req.params.id);
 
-  if (req.query.populate && req.query.populate === "true") {
-    res.json(await populateReport(report))
-  } else {
+  if (req.query.populate && req.query.populate === "false") {
     res.json(report)
+  } else {
+    res.json(await populateReport(report))
   }
 
 })

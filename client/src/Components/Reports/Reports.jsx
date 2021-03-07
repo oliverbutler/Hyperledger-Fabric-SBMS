@@ -1,15 +1,16 @@
 import React, { useState, useEffect } from 'react'
 import axios from "axios"
-import camelcaseKeys from "camelcase-keys"
 
 import ReportsTable from "../CustomTable"
 
-const headCells = [
-  { id: 'id', numeric: false, disablePadding: true, label: 'ID' },
-  { id: 'owner', numeric: false, disablePadding: false, label: 'Owner' },
-  { id: 'building', numeric: false, disablePadding: false, label: 'Building' },
-  { id: 'room', numeric: false, disablePadding: false, label: 'Room' },
-  { id: 'asset', numeric: false, disablePadding: false, label: 'Asset' },
+const columns = [
+  { id: 'id', numeric: true, disablePadding: true, label: 'ID' },
+  { id: 'reportee', numeric: true, disablePadding: false, label: 'Reportee' },
+  { id: 'building.name', numeric: false, disablePadding: false, label: 'Building' },
+  { id: 'room.name', numeric: false, disablePadding: false, label: 'Room' },
+  { id: 'asset.name', numeric: false, disablePadding: false, label: 'Asset' },
+  { id: 'damage.name', numeric: false, disablePadding: false, label: 'Damage' },
+  { id: 'description', numeric: false, disablePadding: false, label: "Description" }
 ];
 
 const Reports = () => {
@@ -19,14 +20,13 @@ const Reports = () => {
 
   useEffect(() => {
     axios.get('http://localhost:5000/reports').then(res => {
-      console.log(camelcaseKeys(res.data))
-      setRows(camelcaseKeys(res.data))
+      setRows(res.data)
     })
   }, [])
 
   return (
     <div>
-      <ReportsTable rows={rows} headCells={headCells} />
+      <ReportsTable rows={rows} columns={columns} />
     </div>
   )
 }

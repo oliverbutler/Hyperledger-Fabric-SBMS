@@ -14,8 +14,8 @@ export const createMock = async (sequelize: Sequelize) => {
 
   // Populate some buildings
   await building.bulkCreate([
-    { id: 1, name: 'Urban Sciences Building' },
-    { id: 2, name: 'Marjorie Robinson Library' }
+    { id: 1, name: 'Urban Sciences Building', description: "Houses Computer Science" },
+    { id: 2, name: 'Marjorie Robinson Library', description: "Main University Library" }
   ], { logging: false });
 
   // Populate some rooms
