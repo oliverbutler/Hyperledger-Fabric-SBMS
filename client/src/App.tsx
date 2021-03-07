@@ -16,11 +16,13 @@ import Assets from "./Components/Assets"
 import Rooms from "./Components/Rooms"
 import BuildingAssets from './Components/Buildings/Assets'
 import DamageTypes from './Components/DamageTypes'
+import CreateReport from "./Components/Reports/Create"
 
 // Icons
 import BusinessIcon from '@material-ui/icons/Business';
 import ListIcon from '@material-ui/icons/List';
 import CategoryIcon from '@material-ui/icons/Category';
+import AddCircleOutlineIcon from '@material-ui/icons/AddCircleOutline';
 
 export interface Page {
   title: string,
@@ -56,6 +58,13 @@ const sections: Page[][] = [
       path: "/damage",
       icon: <CategoryIcon />
     }
+  ],
+  [
+    {
+      title: "New Fault Report",
+      path: "/create-report",
+      icon: <AddCircleOutlineIcon />
+    }
   ]
 ]
 
@@ -90,6 +99,9 @@ const AppDrawer = () => {
         </Route>
         <Route exact path="/damage">
           <DamageTypes />
+        </Route>
+        <Route exact path="/create-report">
+          <CreateReport />
         </Route>
         <Route exact path="/building/:buildingId" render={(props) => (
           <Rooms buildingId={props.match.params.buildingId} />

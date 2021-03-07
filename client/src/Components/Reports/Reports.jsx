@@ -9,6 +9,7 @@ const columns = [
   { id: 'building.name', numeric: false, disablePadding: false, label: 'Building', link: (row) => `/building/${row.building.id}` },
   { id: 'room.name', numeric: false, disablePadding: false, label: 'Room', link: (row) => `/building/${row.building.id}/room/${row.room.id}` },
   { id: 'asset.name', numeric: false, disablePadding: false, label: 'Asset' },
+  { id: 'asset.description', numeric: false, disablePadding: false, label: 'Asset Description' },
   { id: 'damage.name', numeric: false, disablePadding: false, label: 'Damage' },
   { id: 'description', numeric: false, disablePadding: false, label: "Description" },
   { id: 'status', numeric: false, disablePadding: false, label: "Status" },

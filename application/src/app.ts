@@ -125,6 +125,29 @@ app.get('/building/:id/rooms', async (req, res) => {
 })
 
 /**
+ * Return room by roomId
+ */
+app.get('/room/:rid', async (req, res) => {
+  const data = await room.findOne({
+    where: { id: req.params.rid },
+    include: [
+      {
+        model: asset,
+        as: 'assets',
+        include: [
+          { model: type, as: 'type' }
+        ]
+      },
+      {
+        model: building,
+        as: 'building'
+      }
+    ]
+  });
+  res.status(200).json(data);
+})
+
+/**
  * Return a specific room within a building (including its assets)
  */
 app.get('/building/:bid/room/:rid', async (req, res) => {
