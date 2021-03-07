@@ -1,5 +1,5 @@
 import React from 'react';
-import PropTypes from 'prop-types';
+
 import clsx from 'clsx';
 import { lighten, makeStyles } from '@material-ui/core/styles';
 import Table from '@material-ui/core/Table';
@@ -16,7 +16,10 @@ import Paper from '@material-ui/core/Paper';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Switch from '@material-ui/core/Switch';
 
-import _ from "lodash"
+import _, { valuesIn } from "lodash"
+import { Link } from 'react-router-dom';
+import { TitleOutlined } from '@material-ui/icons';
+import { Box } from '@material-ui/core';
 
 /**
  * Compares two strings, standard 1, -1, 0 format.
@@ -27,7 +30,7 @@ import _ from "lodash"
  * @param {*} b 
  * @param {*} orderBy 
  */
-function descendingComparator(a, b, orderBy) {
+const descendingComparator = (a: any, b: any, orderBy: string) => {
   const aVal = _.get(a, orderBy);
   const bVal = _.get(b, orderBy);
 
@@ -35,13 +38,13 @@ function descendingComparator(a, b, orderBy) {
   return ('' + aVal).localeCompare(bVal);
 }
 
-function getComparator(order, orderBy) {
+const getComparator = (order: any, orderBy: string) => {
   return order === 'desc'
-    ? (a, b) => descendingComparator(a, b, orderBy)
-    : (a, b) => -descendingComparator(a, b, orderBy);
+    ? (a: any, b: any) => descendingComparator(a, b, orderBy)
+    : (a: any, b: any) => -descendingComparator(a, b, orderBy);
 }
 
-function stableSort(array, comparator) {
+const stableSort = (array: any[], comparator: any) => {
   const stabilizedThis = array.map((el, index) => [el, index]);
   stabilizedThis.sort((a, b) => {
     const order = comparator(a[0], b[0]);
@@ -51,18 +54,23 @@ function stableSort(array, comparator) {
   return stabilizedThis.map((el) => el[0]);
 }
 
+type EnhancedTableHeadProps = {
+  columns: any,
+  classes: any,
+  order: any,
+  orderBy: any,
+  onRequestSort: any
+}
 
+const EnhancedTableHead = ({ columns, classes, order, orderBy, onRequestSort }: EnhancedTableHeadProps) => {
 
-function EnhancedTableHead(props) {
-  const { classes, order, orderBy, onRequestSort } = props;
-  const createSortHandler = (property) => (event) => {
+  const createSortHandler = (property: any) => (event: any) => {
     onRequestSort(event, property);
   };
-
   return (
     <TableHead>
       <TableRow>
-        {props.columns.map((column) => (
+        {columns.map((column: any) => (
           <TableCell
             key={column.id}
             align={column.numeric ? 'right' : 'left'}
@@ -88,14 +96,6 @@ function EnhancedTableHead(props) {
   );
 }
 
-EnhancedTableHead.propTypes = {
-  classes: PropTypes.object.isRequired,
-  onRequestSort: PropTypes.func.isRequired,
-  order: PropTypes.oneOf(['asc', 'desc']).isRequired,
-  orderBy: PropTypes.string.isRequired,
-  rowCount: PropTypes.number.isRequired,
-};
-
 const useToolbarStyles = makeStyles((theme) => ({
   root: {
     paddingLeft: theme.spacing(2),
@@ -113,18 +113,24 @@ const useToolbarStyles = makeStyles((theme) => ({
       },
   title: {
     flex: '1 1 100%',
+    paddingBottom: 3
   },
 }));
 
-const EnhancedTableToolbar = (props) => {
+const EnhancedTableToolbar = ({ title, context }: any) => {
   const classes = useToolbarStyles();
   return (
     <Toolbar
       className={clsx(classes.root)}
     >
-      <Typography className={classes.title} variant="h6" id="tableTitle" component="div">
-        Reports
-      </Typography>
+      <Box flexDirection="column">
+        <Typography className={classes.title} variant="h6" id="tableTitle" component="div">
+          {title}
+        </Typography>
+        {context && Object.keys(context).map(key => (
+          <Typography variant="body1"><span style={{ fontWeight: 'bold' }}>{key}:</span> {context[key]}</Typography>
+        ))}
+      </Box>
     </Toolbar>
   );
 };
@@ -153,7 +159,41 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const CustomTable = ({ rows, columns }) => {
+/**
+ * Custom Cell to allow custom dynamic rows for each column cell
+ * 
+ * @param row
+ * @param val
+ * @param index 
+ */
+const CustomTableCell = ({ row, val, index }: any) => {
+
+  if (val.link) {
+    return (
+      <TableCell key={`column-${index}`} align={val.numeric ? "right" : "left"}>
+        <Link to={val.link(row)}>
+          {_.get(row, val.id)}
+        </Link>
+      </TableCell>
+    )
+  } else {
+    return (
+      <TableCell key={`column-${index}`} align={val.numeric ? "right" : "left"}>
+        {_.get(row, val.id)}
+      </TableCell>
+    )
+  }
+}
+
+type CustomTableProps = {
+  rows: any[],
+  columns: any[],
+  title: string,
+  context?: any,
+  collapseFunction?: any
+}
+
+const CustomTable = ({ rows, columns, title, context }: CustomTableProps) => {
   const classes = useStyles();
   const [order, setOrder] = React.useState('asc');
   const [orderBy, setOrderBy] = React.useState('id');
@@ -161,7 +201,7 @@ const CustomTable = ({ rows, columns }) => {
   const [dense, setDense] = React.useState(false);
   const [rowsPerPage, setRowsPerPage] = React.useState(10);
 
-  const handleRequestSort = (event, property) => {
+  const handleRequestSort = (event: any, property: any) => {
     const isAsc = orderBy === property && order === 'asc';
     setOrder(isAsc ? 'desc' : 'asc');
     setOrderBy(property);
@@ -170,20 +210,20 @@ const CustomTable = ({ rows, columns }) => {
   /**
    * Handle click on a table row
    */
-  const handleClick = (event, name) => {
+  const handleClick = (event: any, name: number) => {
 
   };
 
-  const handleChangePage = (event, newPage) => {
+  const handleChangePage = (event: any, newPage: any) => {
     setPage(newPage);
   };
 
-  const handleChangeRowsPerPage = (event) => {
+  const handleChangeRowsPerPage = (event: any) => {
     setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0);
   };
 
-  const handleChangeDense = (event) => {
+  const handleChangeDense = (event: any) => {
     setDense(event.target.checked);
   };
 
@@ -192,7 +232,7 @@ const CustomTable = ({ rows, columns }) => {
   return (
     <div className={classes.root}>
       <Paper className={classes.paper}>
-        <EnhancedTableToolbar />
+        <EnhancedTableToolbar title={title} context={context} />
         <TableContainer>
           <Table
             className={classes.table}
@@ -201,12 +241,11 @@ const CustomTable = ({ rows, columns }) => {
             aria-label="enhanced table"
           >
             <EnhancedTableHead
+              columns={columns}
               classes={classes}
               order={order}
               orderBy={orderBy}
               onRequestSort={handleRequestSort}
-              rowCount={rows.length}
-              columns={columns}
             />
             <TableBody>
               {stableSort(rows, getComparator(order, orderBy))
@@ -218,9 +257,7 @@ const CustomTable = ({ rows, columns }) => {
                       onClick={(event) => handleClick(event, row.id)}
                       key={row.id}
                     >
-                      {columns.map((val, index) => (
-                        <TableCell key={`column-${index}`} align={val.numeric ? "right" : "left"}>{_.get(row, val.id)}</TableCell>
-                      ))}
+                      {columns.map((val, index) => <CustomTableCell row={row} val={val} index={index} />)}
                     </TableRow>
                   );
                 })}

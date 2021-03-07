@@ -127,18 +127,41 @@ app.get('/building/:id/rooms', async (req, res) => {
 /**
  * Return a specific room within a building (including its assets)
  */
-app.get('/building/:bid/rooms/:rid', async (req, res) => {
-  const data = await room.findAll({
+app.get('/building/:bid/room/:rid', async (req, res) => {
+  const data = await room.findOne({
     where: { buildingId: req.params.bid, id: req.params.rid },
-    include: [{
-      model: asset, as: 'assets', include: [
-        { model: type, as: 'type' }
-      ]
-    }]
+    include: [
+      {
+        model: asset,
+        as: 'assets',
+        include: [
+          { model: type, as: 'type' }
+        ]
+      },
+      {
+        model: building,
+        as: 'building'
+      }
+    ]
   });
   res.status(200).json(data);
 })
 
+/**
+ * Return all assets
+ */
+app.get('/assets', async (req, res) => {
+  const data = await asset.findAll({
+    include: [
+      { model: type, as: 'type' }
+    ]
+  });
+  res.status(200).json(data);
+})
+
+/**
+ * Get all damage types
+ */
 app.get('/damages', async (req, res) => {
   const data = await damage.findAll({});
   res.status(200).json(data);
