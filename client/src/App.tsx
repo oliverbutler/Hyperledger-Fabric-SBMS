@@ -17,6 +17,7 @@ import Rooms from "./Components/Rooms"
 import BuildingAssets from './Components/Buildings/Assets'
 import DamageTypes from './Components/DamageTypes'
 import CreateReport from "./Components/Reports/Create"
+import Users from './Components/Users'
 
 // Icons
 import BusinessIcon from '@material-ui/icons/Business';
@@ -57,6 +58,11 @@ const sections: Page[][] = [
       title: "Damage Types",
       path: "/damage",
       icon: <CategoryIcon />
+    },
+    {
+      title: "Users",
+      path: "/users",
+      icon: <ListIcon />
     }
   ],
   [
@@ -99,6 +105,9 @@ const AppDrawer = () => {
         </Route>
         <Route exact path="/damage">
           <DamageTypes />
+        </Route>
+        <Route exact path="/users">
+          <Users />
         </Route>
         <Route exact path="/create-report">
           <CreateReport />

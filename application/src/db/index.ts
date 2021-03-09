@@ -14,7 +14,8 @@ const models = [
   require("./models/room.model"),
   require("./models/asset.model"),
   require('./models/type.model'),
-  require('./models/damage.model')
+  require('./models/damage.model'),
+  require('./models/user.model')
 ]
 
 // Define all the models

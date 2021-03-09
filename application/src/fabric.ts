@@ -1,15 +1,19 @@
-import { Contract, Gateway, GatewayOptions } from 'fabric-network';
-import * as path from 'path';
-import { buildCCPOrg1, buildWallet } from './utils/AppUtil';
-import { buildCAClient, enrollAdmin, registerAndEnrollUser } from './utils/CAUtil';
+import { Contract, Gateway, GatewayOptions } from "fabric-network";
+import * as path from "path";
+import { buildCCPOrg1, buildWallet } from "./utils/AppUtil";
+import {
+  buildCAClient,
+  enrollAdmin,
+  registerAndEnrollUser,
+} from "./utils/CAUtil";
 
-const channelName = 'mychannel';
-const chaincodeName = 'basic';
-const mspOrg1 = 'Org1MSP';
-const walletPath = path.join(__dirname, 'wallet');
-const org1UserId = 'appUser1';
+const channelName = "mychannel";
+const chaincodeName = "basic";
+const mspOrg1 = "Org1MSP";
+const walletPath = path.join(__dirname, "wallet");
+const org1UserId = "appUser1";
 
-const _ = require('lodash')
+const _ = require("lodash");
 
 let gateway: Gateway;
 
@@ -20,13 +24,19 @@ export const connectGateway = async () => {
   try {
     const ccp = buildCCPOrg1();
 
-    const caClient = buildCAClient(ccp, 'ca.org1.example.com');
+    const caClient = buildCAClient(ccp, "ca.org1.example.com");
 
     const wallet = await buildWallet(walletPath);
 
     await enrollAdmin(caClient, wallet, mspOrg1);
 
-    await registerAndEnrollUser(caClient, wallet, mspOrg1, org1UserId, 'org1.department1');
+    await registerAndEnrollUser(
+      caClient,
+      wallet,
+      mspOrg1,
+      org1UserId,
+      "org1.department1"
+    );
 
     gateway = new Gateway();
 
@@ -45,20 +55,19 @@ export const connectGateway = async () => {
     contract = network.getContract(chaincodeName);
 
     return contract;
-
   } catch (error) {
     console.error(`Error: ${error}`);
   }
-}
+};
 
 export const disconnect = () => {
-  gateway.disconnect()
-}
+  gateway.disconnect();
+};
 
 /**
  * Interface for a report, decreases the likelihood of typing errors and improves the intellisense capabilities
- * 
- * We use ID's rather than the raw data so we can make changes to names of buildings, rooms, descriptions 
+ *
+ * We use ID's rather than the raw data so we can make changes to names of buildings, rooms, descriptions
  * whatnot within our traditional DB, and the changes will be reflected globally without a ledger rewrite
  */
 export interface Report {
@@ -70,6 +79,8 @@ export interface Report {
   damageId: number;
   description: string;
   status?: string;
+  dateCreated?: string;
+  dateUpdated?: string;
 }
 
 /**
@@ -82,27 +93,36 @@ export const getAllReports = async (): Promise<Report[]> => {
 
   // Change format from {Key: {}, Report: {}} to only the report object (this already includes the key)
   return _.map(json, "Record");
-}
+};
 
 /**
  * Search for a single report by its ID
- * 
- * @param {*} reportId 
+ *
+ * @param {*} reportId
  */
 export const getReport = async (reportId: string): Promise<Report> => {
   let report = await contract.evaluateTransaction("GetReport", reportId);
-  return JSON.parse(report.toString())
-}
+  return JSON.parse(report.toString());
+};
 
 /**
  * Create a new report and add it to the ledger via the smart contract
- * 
- * @param report 
+ *
+ * @param report
  */
 export const createReport = async (report: Report) => {
   report.status = "SUBMITTED";
+  report.dateCreated = Date.now().toString();
   await contract.submitTransaction("CreateReport", JSON.stringify(report));
-}
+};
+
+/**
+ * Check if report exists
+ */
+export const reportExists = async (id: string) => {
+  const report = await contract.evaluateTransaction("ReportExists", id);
+  return JSON.parse(report.toString());
+};
 
 /**
  * Initialize several test reports (strictly for development)
@@ -117,6 +137,7 @@ export const initLedger = async () => {
       assetId: 10, // a unisex toilet
       damageId: 3, // NOT_WORKING
       description: "Toilet is not flushing",
+      dateCreated: "",
     },
     {
       reportId: 2,
@@ -124,11 +145,11 @@ export const initLedger = async () => {
       buildingId: 1, // usb
       roomId: 1, // lobby
       assetId: 12, // Window bay seats
-      damageId: 1, // WATER_DAMAGE 
+      damageId: 1, // WATER_DAMAGE
       description: "Drink Spilled onto Sofa",
-    }
-  ]
+      dateCreated: "",
+    },
+  ];
 
-  await contract.submitTransaction("InitLedger", JSON.stringify(reports));
-}
-
+  // await contract.submitTransaction("InitLedger", JSON.stringify(reports));
+};

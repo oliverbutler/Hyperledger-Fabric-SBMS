@@ -4,21 +4,6 @@ const { Contract } = require("fabric-contract-api");
 
 class FaultReport extends Contract {
   /**
-   * Initialize a ledger, in this case we will have an example report from a practical Room in the USB, report of a broken PC folding mechanism
-   */
-  async InitLedger(ctx, reports) {
-
-    // We have to send the parameters as strings
-    let json = JSON.parse(reports);
-
-    for (const report of json) {
-      report.status = "SUBMITTED"
-      await ctx.stub.putState("report_" + report.reportId, Buffer.from(JSON.stringify(report)));
-      console.log(`Report ${report.ID} initialized successfully`);
-    }
-  }
-
-  /**
    * @param {*} ctx
    * @param {*} id The ID of the report to read
    */
@@ -66,8 +51,8 @@ class FaultReport extends Contract {
   async CreateReport(ctx, report) {
     report = JSON.parse(report);
 
-    if (this.ReportExists(ctx, report.reportId)) {
-      throw new Error(`The report ${id} already exists`);
+    if (await this.ReportExists(ctx, report.reportId)) {
+      throw new Error(`The report ${report.reportId} already exists`);
     }
 
     ctx.stub.putState("report_" + report.reportId, Buffer.from(JSON.stringify(report)));

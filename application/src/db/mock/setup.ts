@@ -10,7 +10,7 @@ export const createMock = async (sequelize: Sequelize) => {
 
   await sequelize.sync({ force: true, logging: false });
 
-  const { building, room, asset, type, damage } = sequelize.models;
+  const { building, room, asset, type, damage, user } = sequelize.models;
 
   // Populate some buildings
   await building.bulkCreate([
@@ -47,5 +47,12 @@ export const createMock = async (sequelize: Sequelize) => {
     { id: 5, name: "EMPTY" },
     { id: 6, name: "DIRTY" },
   ], { logging: false });
+
+  await user.bulkCreate([
+    { id: 1, userCode: "b00001", givenName: "Oliver", familyName: "Butler" },
+    { id: 2, userCode: "b00002", givenName: "Tom", familyName: "Smith" },
+    { id: 3, userCode: "b00003", givenName: "James", familyName: "Harper" },
+    { id: 4, userCode: "b00004", givenName: "Sue", familyName: "Brown" },
+  ], { logging: false })
 
 }
