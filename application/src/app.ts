@@ -42,22 +42,24 @@ fabric
  * @param report
  */
 const populateReport = async (report: fabric.Report) => {
-  let [buildingDB, roomDB, assetDB, damageDB] = await Promise.all([
+  let [buildingDB, roomDB, assetDB, damageDB, userDB] = await Promise.all([
     building.findOne({ where: { id: report.buildingId } }),
     room.findOne({ where: { id: report.roomId } }),
     asset.findOne({ where: { id: report.assetId } }),
     damage.findOne({ where: { id: report.damageId } }),
+    user.findOne({ where: { id: report.reporteeId } }),
   ]);
 
   const populated = {
     id: report.reportId,
-    reportee: report.reporteeId,
+    reportee: userDB,
     building: buildingDB,
     room: roomDB,
     asset: assetDB,
     damage: damageDB,
     description: report.description,
     status: report.status,
+    dateCreated: report.dateCreated,
   };
 
   return populated;

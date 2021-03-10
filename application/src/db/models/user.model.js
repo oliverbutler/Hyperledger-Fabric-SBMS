@@ -13,6 +13,10 @@ module.exports = (sequelize) => {
     familyName: {
       allowNull: false,
       type: DataTypes.STRING
+    },
+    picture: {
+      allowNull: true,
+      type: DataTypes.STRING
     }
   });
 }

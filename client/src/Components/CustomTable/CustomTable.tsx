@@ -82,18 +82,24 @@ const EnhancedTableHead = ({
             padding={column.disablePadding ? "none" : "default"}
             sortDirection={orderBy === column.id ? order : false}
           >
-            <TableSortLabel
-              active={orderBy === column.id}
-              direction={orderBy === column.id ? order : "asc"}
-              onClick={createSortHandler(column.id)}
-            >
-              {column.label}
-              {orderBy === column.id ? (
-                <span className={classes.visuallyHidden}>
-                  {order === "desc" ? "sorted descending" : "sorted ascending"}
-                </span>
-              ) : null}
-            </TableSortLabel>
+            {!column.disableSort ? (
+              <TableSortLabel
+                active={orderBy === column.id}
+                direction={orderBy === column.id ? order : "asc"}
+                onClick={createSortHandler(column.id)}
+              >
+                {column.label}
+                {orderBy === column.id ? (
+                  <span className={classes.visuallyHidden}>
+                    {order === "desc"
+                      ? "sorted descending"
+                      : "sorted ascending"}
+                  </span>
+                ) : null}
+              </TableSortLabel>
+            ) : (
+              column.label
+            )}
           </TableCell>
         ))}
       </TableRow>
@@ -173,11 +179,13 @@ const useStyles = makeStyles((theme) => ({
 /**
  * Custom Cell to allow custom dynamic rows for each column cell
  *
- * @param row
- * @param val
+ * @param row - the value e.g. "Oliver Butler"
+ * @param val - the column e.g. Name
  * @param index
  */
 const CustomTableCell = ({ row, val, index }: any) => {
+  if (val.render)
+    return <TableCell key={`column-${index}`}>{val.render(row)}</TableCell>;
   if (val.link) {
     return (
       <TableCell key={`column-${index}`} align={val.numeric ? "right" : "left"}>

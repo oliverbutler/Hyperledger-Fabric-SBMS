@@ -111,8 +111,10 @@ export const getReport = async (reportId: string): Promise<Report> => {
  * @param report
  */
 export const createReport = async (report: Report) => {
+  var datetime = Date();
+
   report.status = "SUBMITTED";
-  report.dateCreated = Date.now().toString();
+  report.dateCreated = datetime.toString();
   await contract.submitTransaction("CreateReport", JSON.stringify(report));
 };
 

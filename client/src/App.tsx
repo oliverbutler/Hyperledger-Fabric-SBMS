@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState } from "react";
 
 // React routing
 import {
@@ -6,33 +6,34 @@ import {
   Switch,
   Route,
   useLocation,
-} from 'react-router-dom'
+} from "react-router-dom";
 
 // Local components
-import Drawer from "./Components/Drawer"
-import Reports from "./Components/Reports"
-import Buildings from "./Components/Buildings"
-import Assets from "./Components/Assets"
-import Rooms from "./Components/Rooms"
-import BuildingAssets from './Components/Buildings/Assets'
-import DamageTypes from './Components/DamageTypes'
-import CreateReport from "./Components/Reports/Create"
-import Users from './Components/Users'
+import Drawer from "./Components/Drawer";
+import Reports from "./Components/Reports";
+import Buildings from "./Components/Buildings";
+import Assets from "./Components/Assets";
+import Rooms from "./Components/Rooms";
+import BuildingAssets from "./Components/Buildings/Assets";
+import DamageTypes from "./Components/DamageTypes";
+import CreateReport from "./Components/Reports/Create";
+import Users from "./Components/Users";
+import Report from "./Components/Reports/Report";
 
 // Icons
-import BusinessIcon from '@material-ui/icons/Business';
-import ListIcon from '@material-ui/icons/List';
-import CategoryIcon from '@material-ui/icons/Category';
-import AddCircleOutlineIcon from '@material-ui/icons/AddCircleOutline';
+import BusinessIcon from "@material-ui/icons/Business";
+import ListIcon from "@material-ui/icons/List";
+import CategoryIcon from "@material-ui/icons/Category";
+import AddCircleOutlineIcon from "@material-ui/icons/AddCircleOutline";
 
 export interface Page {
-  title: string,
-  path: string,
-  icon: JSX.Element,
+  title: string;
+  path: string;
+  icon: JSX.Element;
 }
 
 /**
- * Split up the sections of the application into arrays of arrays because 
+ * Split up the sections of the application into arrays of arrays because
  * it allows us to seperate sections via <Divider/> in the drawer
  */
 const sections: Page[][] = [
@@ -40,56 +41,56 @@ const sections: Page[][] = [
     {
       title: "All Fault Reports",
       path: "/reports",
-      icon: <ListIcon />
+      icon: <ListIcon />,
     },
   ],
   [
     {
       title: "All Buildings",
       path: "/buildings",
-      icon: <BusinessIcon />
+      icon: <BusinessIcon />,
     },
     {
       title: "All Assets",
       path: "/assets",
-      icon: <ListIcon />
+      icon: <ListIcon />,
     },
     {
       title: "Damage Types",
       path: "/damage",
-      icon: <CategoryIcon />
+      icon: <CategoryIcon />,
     },
     {
       title: "Users",
       path: "/users",
-      icon: <ListIcon />
-    }
+      icon: <ListIcon />,
+    },
   ],
   [
     {
       title: "New Fault Report",
       path: "/create-report",
-      icon: <AddCircleOutlineIcon />
-    }
-  ]
-]
+      icon: <AddCircleOutlineIcon />,
+    },
+  ],
+];
 
-/** 
- * Broken off from App() as we need a component downstream from the <Router/> to utilize hooks 
+/**
+ * Broken off from App() as we need a component downstream from the <Router/> to utilize hooks
  */
 const AppDrawer = () => {
   const location = useLocation();
-  const [title, setTitle] = useState(sections[0][0].title)
+  const [title, setTitle] = useState(sections[0][0].title);
 
   useEffect(() => {
-    sections.forEach(section => {
-      section.forEach(page => {
+    sections.forEach((section) => {
+      section.forEach((page) => {
         if (page.path === location.pathname) {
           setTitle(page.title);
         }
-      })
-    })
-  }, [location])
+      });
+    });
+  }, [location]);
 
   return (
     <Drawer title={title} sections={sections}>
@@ -109,26 +110,44 @@ const AppDrawer = () => {
         <Route exact path="/users">
           <Users />
         </Route>
+        <Route
+          exact
+          path="/report/:reportId"
+          render={(props) => (
+            <Report reportId={parseInt(props.match.params.reportId)} />
+          )}
+        ></Route>
         <Route exact path="/create-report">
           <CreateReport />
         </Route>
-        <Route exact path="/building/:buildingId" render={(props) => (
-          <Rooms buildingId={props.match.params.buildingId} />
-        )} />
-        <Route exact path="/building/:buildingId/room/:roomId" render={(props) => (
-          <BuildingAssets buildingId={props.match.params.buildingId} roomId={props.match.params.roomId} />
-        )} />
+        <Route
+          exact
+          path="/building/:buildingId"
+          render={(props) => (
+            <Rooms buildingId={props.match.params.buildingId} />
+          )}
+        />
+        <Route
+          exact
+          path="/building/:buildingId/room/:roomId"
+          render={(props) => (
+            <BuildingAssets
+              buildingId={props.match.params.buildingId}
+              roomId={props.match.params.roomId}
+            />
+          )}
+        />
       </Switch>
     </Drawer>
-  )
-}
+  );
+};
 
 const App = () => {
   return (
     <Router>
       <AppDrawer />
     </Router>
-  )
-}
+  );
+};
 
-export default App
+export default App;
