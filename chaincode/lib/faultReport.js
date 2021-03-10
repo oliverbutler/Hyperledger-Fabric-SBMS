@@ -18,17 +18,19 @@ class FaultReport extends Contract {
   }
 
   /**
-   * Returns all reports on the ledger,   
-   * 
-   * @param {*} ctx 
+   * Returns all reports on the ledger,
+   *
+   * @param {*} ctx
    */
   async GetAllReports(ctx) {
     const allResults = [];
     // range query with empty string for startKey and endKey does an open-ended query of all assets in the chaincode namespace.
-    const iterator = await ctx.stub.getStateByRange('', '');
+    const iterator = await ctx.stub.getStateByRange("report_0", "report_99999999");
     let result = await iterator.next();
     while (!result.done) {
-      const strValue = Buffer.from(result.value.value.toString()).toString('utf8');
+      const strValue = Buffer.from(result.value.value.toString()).toString(
+        "utf8"
+      );
       let record;
       try {
         record = JSON.parse(strValue);
@@ -44,9 +46,9 @@ class FaultReport extends Contract {
 
   /**
    * Create report from a report object
-   * 
-   * @param {*} ctx 
-   * @param {*} report 
+   *
+   * @param {*} ctx
+   * @param {*} report
    */
   async CreateReport(ctx, report) {
     report = JSON.parse(report);
@@ -55,7 +57,10 @@ class FaultReport extends Contract {
       throw new Error(`The report ${report.reportId} already exists`);
     }
 
-    ctx.stub.putState("report_" + report.reportId, Buffer.from(JSON.stringify(report)));
+    ctx.stub.putState(
+      "report_" + report.reportId,
+      Buffer.from(JSON.stringify(report))
+    );
     return JSON.stringify(report);
   }
 
@@ -70,4 +75,4 @@ class FaultReport extends Contract {
   }
 }
 
-module.exports = FaultReport
+module.exports = FaultReport;
