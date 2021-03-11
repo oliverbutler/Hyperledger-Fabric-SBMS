@@ -88,6 +88,9 @@ export interface Report {
  */
 export const getAllReports = async (): Promise<Report[]> => {
   let reports = await contract.evaluateTransaction("GetAllReports");
+
+  console.log(reports);
+
   // Reports is returned as a Buffer, so we convert this to a json object
   let json = JSON.parse(reports.toString());
 
