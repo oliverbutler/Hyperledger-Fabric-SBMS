@@ -1,4 +1,4 @@
-# Managing smart buildings with blockchain
+# Managing Smart Buildings using Hyperledger Fabric
 
 ## How to run
 

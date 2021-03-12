@@ -245,10 +245,23 @@ app.listen(port, () => {
   console.log(`server started at http://localhost:${port}`);
 });
 
-// Before we close the express server down, disconnect the gateway
-process.on("SIGINT", () => {
-  fabric.disconnect();
-  console.log("[Gateway] Disconnected");
-  console.log("Bye bye!");
-  process.exit();
-});
+process.on("SIGTERM", stopHandler);
+process.on("SIGINT", stopHandler);
+process.on("SIGHUP", stopHandler);
+async function stopHandler() {
+  console.log("Stopping...");
+
+  const timeoutId = setTimeout(() => {
+    process.exit(1);
+    console.error("Stopped forcefully, not all connection was closed");
+  }, 2000);
+
+  try {
+    fabric.disconnect();
+    console.info("[Gateway] Disconnected");
+    clearTimeout(timeoutId);
+  } catch (error) {
+    console.error(error, "Error during stop.");
+    process.exit(1);
+  }
+}

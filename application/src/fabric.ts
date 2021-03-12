@@ -79,6 +79,7 @@ export interface Report {
   damageId: number;
   description: string;
   status?: string;
+  reason?: string;
   dateCreated?: string;
   dateUpdated?: string;
 }
@@ -89,11 +90,8 @@ export interface Report {
 export const getAllReports = async (): Promise<Report[]> => {
   let reports = await contract.evaluateTransaction("GetAllReports");
 
-  console.log(reports);
-
   // Reports is returned as a Buffer, so we convert this to a json object
   let json = JSON.parse(reports.toString());
-
   // Change format from {Key: {}, Report: {}} to only the report object (this already includes the key)
   return _.map(json, "Record");
 };
@@ -129,32 +127,6 @@ export const reportExists = async (id: string) => {
   return JSON.parse(report.toString());
 };
 
-/**
- * Initialize several test reports (strictly for development)
- */
 export const initLedger = async () => {
-  const reports: Report[] = [
-    {
-      reportId: 1,
-      reporteeId: 1,
-      buildingId: 1, // usb
-      roomId: 2, // unisex toilet
-      assetId: 10, // a unisex toilet
-      damageId: 3, // NOT_WORKING
-      description: "Toilet is not flushing",
-      dateCreated: "",
-    },
-    {
-      reportId: 2,
-      reporteeId: 1,
-      buildingId: 1, // usb
-      roomId: 1, // lobby
-      assetId: 12, // Window bay seats
-      damageId: 1, // WATER_DAMAGE
-      description: "Drink Spilled onto Sofa",
-      dateCreated: "",
-    },
-  ];
-
-  // await contract.submitTransaction("InitLedger", JSON.stringify(reports));
+  await contract.submitTransaction("InitLedger");
 };

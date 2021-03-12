@@ -9,13 +9,13 @@ networks:
   dev-network:
 
 services:
-  orderer.dev.example.com:
-    container_name: orderer.dev.example.com
+  orderer.devexample.com:
+    container_name: orderer.devexample.com
     image: hyperledger/fabric-orderer:$IMAGE_TAG
     environment:
       - FABRIC_LOGGING_SPEC=DEBUG
       - ORDERER_GENERAL_LISTENADDRESS=0.0.0.0
-      - ORDERER_GENERAL_LISTENPORT=7050
+      - ORDERER_GENERAL_LISTENPORT=8050
       - ORDERER_GENERAL_GENESISMETHOD=file
       - ORDERER_GENERAL_GENESISFILE=/var/hyperledger/orderer/orderer.genesis.block
       - ORDERER_GENERAL_LOCALMSPDIR=/var/hyperledger/orderer/msp
@@ -26,12 +26,12 @@ services:
       - ./artifacts/genesis.block:/var/hyperledger/orderer/orderer.genesis.block
       - ./ledgerData/orderer:/var/hyperledger/production/orderer
     ports:
-      - 7050:7050
+      - 8050:8050
     networks:
       - dev-network
 
-  peer0.org1.dev.example.com:
-    container_name: peer0.org1.dev.example.com
+  peer0.org1.devexample.com:
+    container_name: peer0.org1.devexample.com
     image: hyperledger/fabric-peer:$IMAGE_TAG
     environment:
       #Generic peer variables
@@ -41,18 +41,18 @@ services:
       # https://docs.docker.com/compose/networking/
       - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=${COMPOSE_PROJECT_NAME}_dev-network
       - FABRIC_LOGGING_SPEC=DEBUG
-      - CORE_PEER_LISTENADDRESS=0.0.0.0:7051
-      - CORE_PEER_ID=peer0.org1.dev.example.com
-      - CORE_PEER_ADDRESS=peer0.org1.dev.example.com:7051
-      - CORE_PEER_CHAINCODEADDRESS=peer0.org1.dev.example.com:7052
-      - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:7052
+      - CORE_PEER_LISTENADDRESS=0.0.0.0:8051
+      - CORE_PEER_ID=peer0.org1.devexample.com
+      - CORE_PEER_ADDRESS=peer0.org1.devexample.com:8051
+      - CORE_PEER_CHAINCODEADDRESS=peer0.org1.devexample.com:8052
+      - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:8052
     volumes:
       - /var/run/:/host/var/run/
       - ./ledgerData/:/var/hyperledger/production
     working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
     command: peer node start --peer-chaincodedev=true
     ports:
-      - 7051:7051
-      - 7052:7052
+      - 8051:8051
+      - 8052:8052
     networks:
       - dev-network

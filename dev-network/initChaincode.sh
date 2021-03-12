@@ -1,5 +1,5 @@
 #!/bin/bash
-CORE_PEER_ADDRESS=127.0.0.1:7051 peer chaincode invoke -o 127.0.0.1:7050 -C ch1 -n mycc -c '{"Args":[]}' --isInit
+CORE_PEER_ADDRESS=127.0.0.1:8051 peer chaincode invoke -o 127.0.0.1:8050 -C ch1 -n mycc -c '{"Args":[]}' --isInit
 
 # Create
 # CORE_PEER_ADDRESS=127.0.0.1:7051 peer chaincode invoke -o 127.0.0.1:7050 -C ch1 -n mycc -c '{"function":"CreateAsset","Args":["asset8","blue","16","Kelley","750"]}'
