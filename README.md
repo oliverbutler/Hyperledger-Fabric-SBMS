@@ -2,6 +2,26 @@
 
 ## How to run
 
+### Prerequesites
+
+First you must clone the fabric-samples repository, this is where the test-network exists.
+
 ### Start the test network
 
-Within the `test-network` directory run the command `./network.sh up createChannel`. This will create the docker containers which emulate a production network of two organizations and an organizer. This will also initialize the default channel.
+within `./application` run `./startTestNet.sh`, this will automatically start the test-network within the fabric-samples directory.
+
+### Start the application
+
+within `./application`
+
+run `yarn install` or `npm install` to download the dependencies
+
+start the application with `yarn start` or `npm run start`
+
+### Start the client
+
+within `./client`
+
+run `yarn install` or `npm install` to download the dependencies
+
+start the client with `yarn start` or `npm run start`
