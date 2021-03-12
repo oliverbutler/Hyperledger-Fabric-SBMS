@@ -1,42 +1,22 @@
 "use strict";
 
-import { Contract, Context, Info, Transaction } from "fabric-contract-api";
-
-interface Report {
-  docType?: "report";
-  reportId: number;
-  reporteeId: number;
-  buildingId: number;
-  roomId: number;
-  assetId: number;
-  damageId: number;
-  description: string;
-  dateCreated: string;
-  status: string;
-  dateUpdateStatus?: string;
-  statusReason?: string;
-}
+const { Contract } = require('fabric-contract-api')
 
 /**
  * Helper function to make changing the index prefix easier globally
  * @param reportId
  * @returns
  */
-const getId = (reportId: number) => {
+const getId = (reportId) => {
   return "report" + reportId;
 };
 
-@Info({
-  title: "FaultReport",
-  description: "Smart Contract for reporting faults in a smart building",
-})
-export class FaultReport extends Contract {
+class FaultReport extends Contract {
   /**
    * @param {*} ctx
    * @param {*} id The ID of the report to read
    */
-  @Transaction(false)
-  async GetReport(ctx: Context, reportId: number) {
+  async GetReport(ctx, reportId) {
     const report = await ctx.stub.getState(getId(reportId)); // return a fault report by a given id
 
     if (!report || report.length === 0) {
@@ -46,19 +26,23 @@ export class FaultReport extends Contract {
     return report.toString();
   }
 
+  async GetAllReports(ctx) {
+    return await this.GetReportByRange(ctx, "0", "9999999999")
+  }
+
   /**
    * Gets all results based upon iterator, and whether to return history or not
-   * @param iterator
+   * 
+   * @param iterators
    * @param isHistory
    * @returns
    */
-  @Transaction(false)
-  async GetAllResults(iterator: any, isHistory: boolean) {
+  async GetAllResults(iterator, isHistory) {
     let allResults = [];
     let res = await iterator.next();
     while (!res.done) {
       if (res.value && res.value.value.toString()) {
-        let jsonRes: any = {};
+        let jsonRes = {};
         console.log(res.value.value.toString("utf8"));
         if (isHistory && isHistory === true) {
           jsonRes.TxId = res.value.tx_id;
@@ -92,8 +76,7 @@ export class FaultReport extends Contract {
    * @param {*} ctx
    * @param {*} report
    */
-  @Transaction()
-  async CreateReport(ctx: Context, report: Report) {
+  async CreateReport(ctx, report) {
     if (await this.ReportExists(ctx, report.reportId)) {
       throw new Error(`The report ${report.reportId} already exists`);
     }
@@ -123,8 +106,7 @@ export class FaultReport extends Contract {
    * @param {} ctx
    * @param {*} reportId
    */
-  @Transaction(false)
-  async ReportExists(ctx: Context, reportId: number) {
+  async ReportExists(ctx, reportId) {
     const report = await ctx.stub.getState(getId(reportId));
     return report && report.length > 0;
   }
@@ -137,8 +119,7 @@ export class FaultReport extends Contract {
    * @param endId
    * @returns
    */
-  @Transaction(false)
-  async GetReportByRange(ctx: Context, startId: number, endId: number) {
+  async GetReportByRange(ctx, startId, endId) {
     let resultsIterator = await ctx.stub.getStateByRange(
       getId(startId),
       getId(endId)
@@ -156,8 +137,7 @@ export class FaultReport extends Contract {
    * @param endKey
    * @returns
    */
-  @Transaction(false)
-  async GetStateByRange(ctx: Context, startKey: string, endKey: string) {
+  async GetStateByRange(ctx, startKey, endKey) {
     let resultsIterator = await ctx.stub.getStateByRange(startKey, endKey);
     let results = await this.GetAllResults(resultsIterator, false);
 
@@ -171,8 +151,7 @@ export class FaultReport extends Contract {
    * @param queryString
    * @returns
    */
-  @Transaction(false)
-  async QueryReports(ctx: Context, queryString: string) {
+  async QueryReports(ctx, queryString) {
     return await this.GetQueryResultForQueryString(ctx, queryString);
   }
 
@@ -183,8 +162,7 @@ export class FaultReport extends Contract {
    * @param queryString
    * @returns
    */
-  @Transaction(false)
-  async GetQueryResultForQueryString(ctx: Context, queryString: string) {
+  async GetQueryResultForQueryString(ctx, queryString) {
     let resultsIterator = await ctx.stub.getQueryResult(queryString);
     let results = await this.GetAllResults(resultsIterator, false);
 
@@ -198,18 +176,17 @@ export class FaultReport extends Contract {
    * @param reportId
    * @returns
    */
-  @Transaction(false)
-  async GetAssetHistory(ctx: Context, reportId: number) {
+  async GetAssetHistory(ctx, reportId) {
     let resultsIterator = await ctx.stub.getHistoryForKey(getId(reportId));
     let results = await this.GetAllResults(resultsIterator, true);
 
     return JSON.stringify(results);
   }
 
-  @Transaction()
-  async ApproveReport(ctx: Context, reportId: number, reason: string) {
+  async ApproveReport(ctx, reportId, reason) {
     let reportString = await this.GetReport(ctx, reportId);
 
     return reportString;
   }
 }
+module.exports = FaultReport

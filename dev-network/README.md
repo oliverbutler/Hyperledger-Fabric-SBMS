@@ -22,6 +22,14 @@ docker-compose up
 ./createChannel.sh
 ```
 
+### Approve the Chaincode
+
+In another window approve the chaincode
+
+```
+./approveChaincode.sh
+```
+
 ### Build and start the chaincode
 
 For TS/JS we can just run it, use this command in the chaincode directory to initialize it.
@@ -34,14 +42,6 @@ then you must initialize the chaincode
 
 ```
 ./initChaincode.sh
-```
-
-### Approve the Chaincode
-
-In another window approve the chaincode
-
-```
-./approveChaincode.sh
 ```
 
 ### Done!

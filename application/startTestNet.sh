@@ -15,7 +15,7 @@ pushd ../fabric-samples/test-network
 
 ./network.sh down
 ./network.sh up createChannel -ca -s couchdb
-./network.sh deployCC -ccn basic -ccp ../../chaincode -ccl typescript
+./network.sh deployCC -ccn basic -ccp ../../chaincode -ccl javascript
 
 
 popd

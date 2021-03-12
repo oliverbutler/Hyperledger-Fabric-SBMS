@@ -9,8 +9,8 @@ networks:
   dev-network:
 
 services:
-  orderer.example.com:
-    container_name: orderer.example.com
+  orderer.dev.example.com:
+    container_name: orderer.dev.example.com
     image: hyperledger/fabric-orderer:$IMAGE_TAG
     environment:
       - FABRIC_LOGGING_SPEC=DEBUG
@@ -30,8 +30,8 @@ services:
     networks:
       - dev-network
 
-  peer0.org1.example.com:
-    container_name: peer0.org1.example.com
+  peer0.org1.dev.example.com:
+    container_name: peer0.org1.dev.example.com
     image: hyperledger/fabric-peer:$IMAGE_TAG
     environment:
       #Generic peer variables
@@ -42,9 +42,9 @@ services:
       - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=${COMPOSE_PROJECT_NAME}_dev-network
       - FABRIC_LOGGING_SPEC=DEBUG
       - CORE_PEER_LISTENADDRESS=0.0.0.0:7051
-      - CORE_PEER_ID=peer0.org1.example.com
-      - CORE_PEER_ADDRESS=peer0.org1.example.com:7051
-      - CORE_PEER_CHAINCODEADDRESS=peer0.org1.example.com:7052
+      - CORE_PEER_ID=peer0.org1.dev.example.com
+      - CORE_PEER_ADDRESS=peer0.org1.dev.example.com:7051
+      - CORE_PEER_CHAINCODEADDRESS=peer0.org1.dev.example.com:7052
       - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:7052
     volumes:
       - /var/run/:/host/var/run/

@@ -10,7 +10,3 @@ popd
 
 # clean out any old identites in the wallets
 rm -rf ./dist/wallet
-# rm -rf addAssets.json mychannel_basic.log mychannel__lifecycle.log nextblock.txt
-
-# docker stop localcouchdb
-# docker rm localcouchdb
