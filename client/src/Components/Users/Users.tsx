@@ -5,7 +5,13 @@ import Table from "../CustomTable";
 import { Avatar } from "@material-ui/core";
 
 const columns = [
-  { id: "id", numeric: true, disablePadding: true, label: "ID" },
+  {
+    id: "id",
+    numeric: true,
+    disablePadding: true,
+    label: "ID",
+    link: (row: any) => `/user/${row.id}`,
+  },
   { id: "userCode", numeric: false, disablePadding: false, label: "User Code" },
   {
     id: "givenName",
@@ -18,6 +24,12 @@ const columns = [
     numeric: false,
     disablePadding: false,
     label: "Last Name",
+  },
+  {
+    id: "score",
+    numeric: false,
+    disablePadding: false,
+    label: "Reporting Score",
   },
   {
     id: "picture",

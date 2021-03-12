@@ -59,11 +59,16 @@ const populateReport = async (report: fabric.Report) => {
     damage: damageDB,
     description: report.description,
     status: report.status,
+    reason: report.reason,
     dateCreated: report.dateCreated,
   };
 
   return populated;
 };
+
+/* -------------------------------------------------------------------------- */
+/*                                     API                                    */
+/* -------------------------------------------------------------------------- */
 
 app.get("/", (req, res) => {
   res.json({ alive: true });
@@ -73,6 +78,10 @@ app.get("/init-ledger", async (req, res) => {
   await fabric.initLedger();
   res.json({ success: true });
 });
+
+/* -------------------------------------------------------------------------- */
+/*                                   Reports                                  */
+/* -------------------------------------------------------------------------- */
 
 /**
  * Return all reports on the ledger
@@ -147,6 +156,49 @@ app.get("/report/:id", async (req, res) => {
 });
 
 /**
+ * Get report history
+ */
+app.get("/report/:id/history", async (req, res) => {
+  let report = await fabric.getReportHistory(req.params.id);
+
+  res.json(report);
+});
+
+app.post("/report/:id/approve", async (req, res) => {
+  if (!req.body.reason)
+    res.status(400).json({ error: "Must include reason for approval" });
+
+  await fabric.approveReport(req.params.id, req.body.reason);
+
+  res.json({ success: true });
+});
+
+app.post("/report/:id/deny", async (req, res) => {
+  if (!req.body.reason)
+    res.status(400).json({ error: "Must include reason for denial" });
+
+  // if (!req.body.deduct)
+  //   res
+  //     .status(400)
+  //     .json({ error: "Must include whether to deduct points or not" });
+
+  await fabric.denyReport(req.params.id, req.body.reason, req.body.deduct);
+
+  res.json({ success: true });
+});
+
+app.get("/reportees", async (req, res) => {
+  const reportees = await fabric.getAllReportees();
+
+  res.json(reportees);
+});
+/* -------------------------------------------------------------------------- */
+/*                                  Buildings                                 */
+/* -------------------------------------------------------------------------- */
+
+/* -------------------------------- Buildings ------------------------------- */
+
+/**
  * Return all buildings
  */
 app.get("/buildings", async (req, res) => {
@@ -174,6 +226,8 @@ app.get("/building/:id/rooms", async (req, res) => {
   });
   res.status(200).json(data);
 });
+
+/* ---------------------------------- Rooms --------------------------------- */
 
 /**
  * Return room by roomId
@@ -217,6 +271,8 @@ app.get("/building/:bid/room/:rid", async (req, res) => {
   res.status(200).json(data);
 });
 
+/* --------------------------------- Assets --------------------------------- */
+
 /**
  * Return all assets
  */
@@ -227,6 +283,8 @@ app.get("/assets", async (req, res) => {
   res.status(200).json(data);
 });
 
+/* ------------------------------ Damage Types ------------------------------ */
+
 /**
  * Get all damage types
  */
@@ -235,33 +293,52 @@ app.get("/damages", async (req, res) => {
   res.status(200).json(data);
 });
 
+/* -------------------------------------------------------------------------- */
+/*                                    Users                                   */
+/* -------------------------------------------------------------------------- */
+
 app.get("/users", async (req, res) => {
-  const data = await user.findAll({});
+  const data: any[] = await user.findAll({ raw: true });
+  const reportees: any[] = await fabric.getAllReportees();
+
+  // Utilize data from the ledger to give each user a score
+  data.forEach((user) => {
+    let found = false;
+    reportees.forEach((reportee) => {
+      if (user.id == reportee.Record.reporteeId) {
+        user.score = reportee.Record.score;
+        found = true;
+      }
+    });
+    if (!found) user.score = 0;
+  });
+
   res.status(200).json(data);
 });
+
+app.get("/user/:id/history", async (req, res) => {
+  const userHistory = await fabric.getReporteeHistory(req.params.id);
+
+  res.json(userHistory);
+});
+
+/* -------------------------------------------------------------------------- */
+/*                               Express Config                               */
+/* -------------------------------------------------------------------------- */
 
 // start the Express server
 app.listen(port, () => {
   console.log(`server started at http://localhost:${port}`);
 });
 
-process.on("SIGTERM", stopHandler);
-process.on("SIGINT", stopHandler);
-process.on("SIGHUP", stopHandler);
-async function stopHandler() {
-  console.log("Stopping...");
+/* -------------------------------------------------------------------------- */
+/*                                 Exit Logic                                 */
+/* -------------------------------------------------------------------------- */
 
-  const timeoutId = setTimeout(() => {
-    process.exit(1);
-    console.error("Stopped forcefully, not all connection was closed");
-  }, 2000);
-
-  try {
-    fabric.disconnect();
-    console.info("[Gateway] Disconnected");
-    clearTimeout(timeoutId);
-  } catch (error) {
-    console.error(error, "Error during stop.");
-    process.exit(1);
-  }
-}
+// Before we close the express server down, disconnect the gateway
+process.on("SIGINT", () => {
+  fabric.disconnect();
+  console.log("[Gateway] Disconnected");
+  console.log("Bye bye!");
+  process.exit();
+});

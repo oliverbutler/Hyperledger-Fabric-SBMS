@@ -38,7 +38,8 @@ class FaultReport extends Contract {
         assetId: 10, // a unisex toilet
         damageId: 3, // NOT_WORKING
         description: "Toilet is not flushing",
-        dateCreated: new Date().toString(),
+        dateCreated:
+          "Fri Mar 12 2021 17:00:16 GMT+0000 (Coordinated Universal Time)",
         status: "SUBMITTED",
       },
       {
@@ -49,7 +50,8 @@ class FaultReport extends Contract {
         assetId: 12, // Window bay seats
         damageId: 1, // WATER_DAMAGE
         description: "Drink Spilled onto Sofa",
-        dateCreated: new Date().toString(),
+        dateCreated:
+          "Fri Mar 12 2021 17:00:16 GMT+0000 (Coordinated Universal Time)",
         status: "APPROVED",
         reason: "Problem fixed",
       },
@@ -284,6 +286,47 @@ class FaultReport extends Contract {
   }
 
   /**
+   * Updates the score of a user
+   *
+   * - if the user doesnt exist, create them
+   * - score starts at 0
+   *
+   * @param {Context} ctx
+   * @param {string} reporteeId
+   * @param {string} delta
+   */
+  async UpdateScore(ctx, reporteeId, delta, reportId) {
+    try {
+      parseInt(delta);
+    } catch (err) {
+      throw new Error("delta must be an integer");
+    }
+
+    let reporteeBuffer = await this.GetReportee(ctx, reporteeId);
+
+    if (!reporteeBuffer || !reporteeBuffer.toString()) {
+      throw new Error(`Reportee ${reporteeId} doesn't exist`);
+    }
+
+    let reportee = {};
+
+    try {
+      reportee = JSON.parse(reporteeBuffer.toString());
+    } catch (err) {
+      throw new Error(`Failed to decode JSON of ${getReporteeId(reporteeId)}`);
+    }
+
+    reportee.score += parseInt(delta);
+    reportee.scoreDelta = parseInt(delta); // store the delta alongside to see in history
+    reportee.reportReferenceId = reportId; // store the reference alongside to see in history
+
+    await ctx.stub.putState(
+      getReporteeId(reporteeId),
+      Buffer.from(JSON.stringify(reportee))
+    );
+  }
+
+  /**
    * Approve a report, taking a reason
    *
    * @param {Context} ctx
@@ -309,17 +352,12 @@ class FaultReport extends Contract {
     report.status = "APPROVED";
     report.reason = reason;
 
-    // Now we have approved the report lets either update or
-    // create this reportees ledger asset
-
-    try {
-      await this.CreateReportee(ctx, report.reporteeId);
-    } catch (err) {
-      console.info(`Reportee ${report.reporteeId} already exists!`);
+    if (!(await this.ReporteeExists(ctx, report.reporteeId))) {
+      throw new Error(`Reportee ${report.reporteeId} doesn't exist`);
     }
 
     // Update the score of the reportee, in this case, with a delta of +1
-    await this.UpdateScore(ctx, report.reporteeId, 1);
+    await this.UpdateScore(ctx, report.reporteeId, "1", reportId);
 
     // Update the report on the ledger
     await ctx.stub.putState(
@@ -334,9 +372,9 @@ class FaultReport extends Contract {
    * @param {Context} ctx
    * @param {string} reportId
    * @param {string} reason
-   * @param {string} deductPoints
+   * @param {string} deduct
    */
-  async DenyReport(ctx, reportId, reason, deductPoints) {
+  async DenyReport(ctx, reportId, reason, deduct) {
     let reportBuffer = await this.GetReport(ctx, reportId);
 
     if (!reportBuffer || !reportBuffer.toString()) {
@@ -354,18 +392,16 @@ class FaultReport extends Contract {
     report.status = "DENIED";
     report.reason = reason;
 
-    // If we choose to deduct points, otherwise do nothing
-    if (deductPoints) {
-      // Now we have deny the report lets either update or
-      // create this reportees ledger asset
-      try {
-        await this.CreateReportee(ctx, report.reporteeId);
-      } catch (err) {
-        console.info(`Reportee ${report.reporteeId} already exists!`);
-      }
+    if (!(await this.ReporteeExists(ctx, report.reporteeId))) {
+      throw new Error(`Reportee ${report.reporteeId} doesn't exist`);
+    }
 
+    if (deduct == "true") {
       // Update the score of the reportee, in this case, with a delta of +1
-      await this.UpdateScore(ctx, report.reporteeId, -1);
+      await this.UpdateScore(ctx, report.reporteeId, "-1", reportId);
+    } else {
+      // Still update them so they have a permanent record in their ledger
+      await this.UpdateScore(ctx, report.reporteeId, "0", reportId);
     }
 
     await ctx.stub.putState(
@@ -377,6 +413,17 @@ class FaultReport extends Contract {
   /* -------------------------------------------------------------------------- */
   /*                                  Reportee                                  */
   /* -------------------------------------------------------------------------- */
+
+  /**
+   * Check whether a reportee exists or not via their reporteeId
+   *
+   * @param {Context} ctx
+   * @param {string} reporteeId
+   */
+  async ReporteeExists(ctx, reporteeId) {
+    const reportee = await ctx.stub.getState(getReporteeId(reporteeId));
+    return reportee && reportee.length > 0;
+  }
 
   /**
    * Create a reportee given their reporteeId
@@ -457,62 +504,6 @@ class FaultReport extends Contract {
     let results = await this.GetAllResults(iterator, true);
 
     return JSON.stringify(results);
-  }
-
-  /**
-   * Updates the score of a user
-   *
-   * - if the user doesnt exist, create them
-   * - score starts at 0
-   *
-   * @param {Context} ctx
-   * @param {string} reporteeId
-   * @param {string} delta
-   */
-  async UpdateScore(ctx, reporteeId, delta, reportId) {
-    if (!(await this.ReportExists(ctx, reportId))) {
-      throw new Error("Referenced report doesn't exist");
-    }
-
-    try {
-      parseInt(delta);
-    } catch (err) {
-      throw new Error("delta must be an integer");
-    }
-
-    let reporteeBuffer = await this.GetReportee(ctx, reporteeId);
-
-    if (!reporteeBuffer || !reporteeBuffer.toString()) {
-      throw new Error(`Reportee ${reporteeId} doesn't exist`);
-    }
-
-    let reportee = {};
-
-    try {
-      reportee = JSON.parse(reporteeBuffer.toString());
-    } catch (err) {
-      throw new Error(`Failed to decode JSON of ${getReporteeId(reporteeId)}`);
-    }
-
-    reportee.score += parseInt(delta);
-    reportee.scoreDelta = parseInt(delta); // store the delta alongside to see in history
-    reportee.reportReferenceId = reporteeId; // store the reference alongside to see in history
-
-    await ctx.stub.putState(
-      getReporteeId(reporteeId),
-      Buffer.from(JSON.stringify(reportee))
-    );
-  }
-
-  /**
-   * Check whether a reportee exists or not via their reporteeId
-   *
-   * @param {Context} ctx
-   * @param {string} reporteeId
-   */
-  async ReporteeExists(ctx, reporteeId) {
-    const reportee = await ctx.stub.getState(getReporteeId(reporteeId));
-    return reportee && reportee.length > 0;
   }
 }
 

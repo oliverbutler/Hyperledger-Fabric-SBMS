@@ -107,6 +107,16 @@ export const getReport = async (reportId: string): Promise<Report> => {
 };
 
 /**
+ * Search for a single report's history by its ID
+ *
+ * @param {*} reportId
+ */
+export const getReportHistory = async (reportId: string): Promise<Report> => {
+  let report = await contract.evaluateTransaction("GetReportHistory", reportId);
+  return JSON.parse(report.toString());
+};
+
+/**
  * Create a new report and add it to the ledger via the smart contract
  *
  * @param report
@@ -129,4 +139,55 @@ export const reportExists = async (id: string) => {
 
 export const initLedger = async () => {
   await contract.submitTransaction("InitLedger");
+};
+
+/* -------------------------------------------------------------------------- */
+/*                                   Report                                   */
+/* -------------------------------------------------------------------------- */
+
+export const getAllReportees = async () => {
+  const reportees = await contract.evaluateTransaction("GetAllReportees");
+  return JSON.parse(reportees.toString());
+};
+
+export const getReporteeHistory = async (reporteeId: string) => {
+  const reportee = await contract.evaluateTransaction(
+    "GetReporteeHistory",
+    reporteeId
+  );
+  return JSON.parse(reportee.toString());
+};
+
+export const approveReport = async (reportId: string, reason: string) => {
+  const report = await getReport(reportId);
+
+  try {
+    await contract.submitTransaction(
+      "CreateReportee",
+      report.reporteeId.toString()
+    );
+  } catch (err) {
+    console.info("Reportee already exists...");
+  }
+
+  await contract.submitTransaction("ApproveReport", reportId, reason);
+};
+
+export const denyReport = async (
+  reportId: string,
+  reason: string,
+  deduct: string
+) => {
+  const report = await getReport(reportId);
+
+  try {
+    await contract.submitTransaction(
+      "CreateReportee",
+      report.reporteeId.toString()
+    );
+  } catch (err) {
+    console.info("Reportee already exists...");
+  }
+
+  await contract.submitTransaction("DenyReport", reportId, reason, deduct);
 };

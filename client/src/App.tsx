@@ -18,6 +18,7 @@ import BuildingAssets from "./Components/Buildings/Assets";
 import DamageTypes from "./Components/DamageTypes";
 import CreateReport from "./Components/Reports/Create";
 import Users from "./Components/Users";
+import User from "./Components/Users/User";
 import Report from "./Components/Reports/Report";
 
 // Icons
@@ -110,6 +111,13 @@ const AppDrawer = () => {
         <Route exact path="/users">
           <Users />
         </Route>
+        <Route
+          exact
+          path="/user/:userId"
+          render={(props) => (
+            <User userId={parseInt(props.match.params.userId)} />
+          )}
+        ></Route>
         <Route
           exact
           path="/report/:reportId"
