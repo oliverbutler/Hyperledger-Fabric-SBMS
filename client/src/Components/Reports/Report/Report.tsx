@@ -14,10 +14,38 @@ import {
   TextField,
   Typography,
 } from "@material-ui/core";
+import CustomTable from "../../CustomTable";
 
 type ReportProps = {
   reportId: number;
 };
+
+const columns = [
+  {
+    id: "date",
+    numeric: true,
+    disablePadding: true,
+    label: "date",
+    render: (row: any) => {
+      var d = new Date(0);
+      d.setUTCSeconds(row.Timestamp.seconds);
+      return d.toLocaleString();
+    },
+  },
+  {
+    id: "status",
+    numeric: false,
+    disablePadding: true,
+    label: "Status",
+    render: (row: any) => <Chip label={row.Value.status} color="secondary" />,
+  },
+  {
+    id: "Value.reason",
+    numeric: false,
+    disablePadding: true,
+    label: "Reason",
+  },
+];
 
 const Report = ({ reportId }: ReportProps) => {
   const [report, setReport] = useState<any>(null);
@@ -25,7 +53,7 @@ const Report = ({ reportId }: ReportProps) => {
 
   const [loading, setLoading] = useState(false);
 
-  const [history, setHistory] = useState();
+  const [history, setHistory] = useState<any[]>([]);
 
   useEffect(() => {
     axios.get(`http://localhost:5000/report/${reportId}`).then((res) => {
@@ -181,12 +209,25 @@ const Report = ({ reportId }: ReportProps) => {
           {loading && <CircularProgress />}
         </Box>
       </Paper>
-      <Paper>
+      <CustomTable rows={history} columns={columns} title="Report History" />
+      {/* <Paper>
         <Box p={2} my={2}>
           <Typography variant="h6">Report Ledger History</Typography>
+          {history &&
+            history.map((h) => {
+              var d = new Date(0);
+              d.setUTCSeconds(h.Timestamp.seconds);
+              return (
+                <Box mb={1}>
+                  <Typography variant="h6">{d.toDateString()}</Typography>
+                  c
+                  {report.reason && <Typography>{report.reason}</Typography>}
+                </Box>
+              );
+            })}
           <pre>{JSON.stringify(history, null, 2)}</pre>
         </Box>
-      </Paper>
+      </Paper> */}
     </div>
   );
 };

@@ -51,6 +51,7 @@ export const createMock = async (sequelize: Sequelize) => {
     [
       { id: 1, name: "chair" },
       { id: 2, name: "toilet-accessible" },
+      { id: 5, name: "wash-basin" },
       { id: 3, name: "toilet" },
       { id: 4, name: "sofa" },
     ],
@@ -66,6 +67,13 @@ export const createMock = async (sequelize: Sequelize) => {
         typeId: 2,
         name: "TO_0012",
         description: "Accessible Toilet",
+      },
+      {
+        id: 15,
+        roomId: 2,
+        typeId: 5,
+        name: "WB_00123",
+        description: "Wash Basin",
       },
       {
         id: 12,

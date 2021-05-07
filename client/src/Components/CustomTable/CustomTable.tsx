@@ -207,15 +207,22 @@ type CustomTableProps = {
   title: string;
   context?: any;
   collapseFunction?: any;
+  rowsShown?: number;
 };
 
-const CustomTable = ({ rows, columns, title, context }: CustomTableProps) => {
+const CustomTable = ({
+  rows,
+  columns,
+  title,
+  context,
+  rowsShown = 5,
+}: CustomTableProps) => {
   const classes = useStyles();
   const [order, setOrder] = React.useState("asc");
   const [orderBy, setOrderBy] = React.useState("id");
   const [page, setPage] = React.useState(0);
   const [dense, setDense] = React.useState(false);
-  const [rowsPerPage, setRowsPerPage] = React.useState(10);
+  const [rowsPerPage, setRowsPerPage] = React.useState(5);
 
   const handleRequestSort = (event: any, property: any) => {
     const isAsc = orderBy === property && order === "asc";

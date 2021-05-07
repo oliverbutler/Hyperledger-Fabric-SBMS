@@ -158,6 +158,21 @@ export const getReporteeHistory = async (reporteeId: string) => {
   return JSON.parse(reportee.toString());
 };
 
+/**
+ * For each report in the ledger, delete it
+ */
+export const deleteAllReports = async () => {
+  const reports = await getAllReports();
+
+  console.log("Delete all Reports");
+
+  reports.forEach(async (r) => {
+    await contract.submitTransaction("DeleteReport", String(r.reportId));
+  });
+
+  return true;
+};
+
 export const approveReport = async (reportId: string, reason: string) => {
   const report = await getReport(reportId);
 
